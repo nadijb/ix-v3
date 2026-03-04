@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Phone, Navigation, ShieldCheck, CalendarDays, CheckCircle2, X } from "lucide-react";
+import { MapPin, Phone, Navigation, ShieldCheck, CalendarDays, CheckCircle2, X, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ type BookingState =
   | { phase: "idle" }
   | { phase: "pick_date" }
   | { phase: "pick_time"; date: string }
+  | { phase: "submitting"; date: string; time: TimeSlot }
   | { phase: "confirmed"; date: string; time: TimeSlot };
 
 function ProviderCard({ provider, actions }: { provider: Provider; actions: string[] }) {
@@ -44,10 +45,29 @@ function ProviderCard({ provider, actions }: { provider: Provider; actions: stri
 
   function startBook() { setBooking({ phase: "pick_date" }); }
   function pickDate(key: string) { setBooking({ phase: "pick_time", date: key }); }
-  function pickTime(time: TimeSlot) {
+
+  async function pickTime(time: TimeSlot) {
     if (booking.phase !== "pick_time") return;
-    setBooking({ phase: "confirmed", date: booking.date, time });
+    const date = booking.date;
+    setBooking({ phase: "submitting", date, time });
+    try {
+      await fetch("https://n8n-automation-test3.iohealth.com/webhook/ix/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider_name: provider.name,
+          provider_city: provider.city,
+          date,
+          time_slot: time,
+          phone: provider.phone ?? null,
+        }),
+      });
+    } catch {
+      // Fire-and-forget — proceed to confirmed regardless
+    }
+    setBooking({ phase: "confirmed", date, time });
   }
+
   function cancel() { setBooking({ phase: "idle" }); }
 
   const confirmedDate = booking.phase === "confirmed"
