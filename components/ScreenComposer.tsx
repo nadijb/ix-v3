@@ -21,9 +21,9 @@ const ELEMENT_RENDERERS: Record<string, React.ComponentType<{ config: Experience
 };
 
 const SLOT_LABELS: Record<SlotType, { label: string; color: string }> = {
-  anchor: { label: "Anchor", color: "text-white border-white/20 bg-white/5" },
-  supporting: { label: "Supporting", color: "text-neutral-400 border-neutral-600/50 bg-neutral-800/50" },
-  actions: { label: "Actions", color: "text-neutral-300 border-neutral-500/30 bg-neutral-700/20" },
+  anchor:     { label: "Anchor",     color: "dark:text-white dark:border-white/20 dark:bg-white/5 text-neutral-800 border-neutral-300 bg-neutral-100" },
+  supporting: { label: "Supporting", color: "text-neutral-400 dark:border-neutral-600/50 border-neutral-300 dark:bg-neutral-800/50 bg-neutral-100/70" },
+  actions:    { label: "Actions",    color: "text-neutral-300 dark:border-neutral-500/30 border-neutral-300 dark:bg-neutral-700/20 bg-neutral-100/50" },
 };
 
 interface Props {

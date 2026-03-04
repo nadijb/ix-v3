@@ -1,13 +1,25 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { RefreshCw, Loader2, AlertCircle, Cpu, GitBranch } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { RefreshCw, Loader2, AlertCircle, Cpu, GitBranch, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScenarioSelector, SCENARIOS } from "@/components/ScenarioSelector";
 import { ScreenComposer } from "@/components/ScreenComposer";
 import { IXPPanel } from "@/components/IXPPanel";
-import { ScreenPayload, ScenarioPreset } from "@/types/ix";
+import { ChatWidget } from "@/components/ChatWidget";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { CoInsuranceRules } from "@/components/elements/CoInsuranceRules";
+import { ProviderFinder } from "@/components/elements/ProviderFinder";
+import { ClaimsTracker } from "@/components/elements/ClaimsTracker";
+import {
+  ScreenPayload,
+  ScenarioPreset,
+  ChatElement,
+  CoInsuranceRulesBinding,
+  ProviderFinderBinding,
+  ClaimsTrackerBinding,
+} from "@/types/ix";
 import { cn } from "@/lib/utils";
 
 const PERSONA_COLORS: Record<string, string> = {
@@ -19,11 +31,56 @@ const PERSONA_COLORS: Record<string, string> = {
   standard: "text-neutral-300",
 };
 
+// Render an AI-returned element by element_id
+function AIElementRenderer({ entry }: { entry: { element: ChatElement; version: number } }) {
+  const { element } = entry;
+  switch (element.element_id) {
+    case "CL_COINSURANCE_RULES_V1":
+      return <CoInsuranceRules binding={element.data_binding as CoInsuranceRulesBinding} />;
+    case "DT_PROVIDER_FINDER_V1":
+      return <ProviderFinder binding={element.data_binding as ProviderFinderBinding} />;
+    case "CL_CLAIMS_TRACKER_V1":
+      return <ClaimsTracker binding={element.data_binding as ClaimsTrackerBinding} />;
+    default:
+      return null;
+  }
+}
+
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState<ScreenPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<string>("1.1");
+  const [aiElements, setAiElements] = useState<
+    Array<{ element: ChatElement; version: number }>
+  >([]);
+  const scrollTargetRef = useRef<string | null>(null);
+
+  const handleNewElement = useCallback((element: ChatElement) => {
+    scrollTargetRef.current = element.element_id;
+    setAiElements((prev) => {
+      const idx = prev.findIndex((e) => e.element.element_id === element.element_id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { element, version: prev[idx].version + 1 };
+        return next;
+      }
+      return [...prev, { element, version: 0 }];
+    });
+  }, []);
+
+  // Smooth-scroll to newly added/updated AI element after render
+  useEffect(() => {
+    if (!scrollTargetRef.current) return;
+    const id = scrollTargetRef.current;
+    scrollTargetRef.current = null;
+    // Small delay lets the element animate in before scrolling
+    const timer = setTimeout(() => {
+      document.querySelector(`[data-ai-element="${id}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [aiElements]);
 
   const compose = useCallback(async (scenario: ScenarioPreset) => {
     setLoading(true);
@@ -59,6 +116,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ThemeToggle />
       {/* Top bar */}
       <header className="hidden sticky top-0 z-40 border-b border-neutral-800/80 bg-neutral-950/90 backdrop-blur-sm">
         <div className="flex items-center justify-between px-6 h-14">
@@ -131,7 +189,7 @@ export default function HomePage() {
       </header>
 
       {/* Main content */}
-      <div className="flex flex-col lg:flex-row flex-1 gap-4 lg:gap-6 p-4 lg:p-6">
+      <div className="flex flex-col lg:flex-row flex-1 gap-4 lg:gap-6 p-4 lg:p-6 pb-28 lg:pb-28">
         {/* Scenarios: chip strip on mobile, sidebar on desktop */}
         <ScenarioSelector
           selected={selectedScenario}
@@ -193,14 +251,6 @@ export default function HomePage() {
             <div className="space-y-4">
               {/* Screen meta */}
               <div className="flex items-center justify-between">
-                {/*<div className="flex items-center gap-2">
-                  <Badge variant="default" className="font-mono text-xs">
-                    {payload.screen_id}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    {payload.intent_id}
-                  </Badge>
-                </div>*/}
                 <span className="hidden sm:block text-xs text-neutral-600 font-mono">
                   {payload.pipeline_version} ·{" "}
                   {new Date(payload.generated_at).toLocaleTimeString()}
@@ -208,6 +258,27 @@ export default function HomePage() {
               </div>
 
               <ScreenComposer payload={payload} />
+
+              {/* AI-suggested elements — appended by chat, never cleared */}
+              {aiElements.length > 0 && (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-3 w-3 text-neutral-600" />
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                      AI Suggested
+                    </span>
+                    <div className="flex-1 h-px bg-neutral-800" />
+                  </div>
+                  {aiElements.map((entry) => (
+                    <div
+                      key={`${entry.element.element_id}_${entry.version}`}
+                      data-ai-element={entry.element.element_id}
+                    >
+                      <AIElementRenderer entry={entry} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -224,6 +295,9 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Sticky AI chat widget */}
+      <ChatWidget onNewElement={handleNewElement} customerId={1} />
     </div>
   );
 }

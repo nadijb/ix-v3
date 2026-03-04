@@ -1,6 +1,7 @@
 "use client";
 
-import { Stethoscope, CheckCircle2, AlertTriangle, Building2 } from "lucide-react";
+import { useState } from "react";
+import { Stethoscope, CheckCircle2, AlertTriangle, Building2, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -12,11 +13,20 @@ interface Props {
   index: number;
 }
 
+const INITIAL_SHOW = 3;
+
 export function CoverageSpotlight({ config, index }: Props) {
   const b = config.data_binding as CoverageSpotlightBinding;
-  const usedPct = b.annual_limit ? (b.used_amount / b.annual_limit) * 100 : 0;
+  const usedPct  = b.annual_limit ? (b.used_amount / b.annual_limit) * 100 : 0;
   const remaining = b.remaining ?? b.annual_limit - b.used_amount;
   const isCritical = usedPct > 80;
+
+  const [showAll, setShowAll]         = useState(false);
+  const [selectedTreatment, setSelected] = useState<string | null>(null);
+
+  const treatments = b.included_treatments ?? [];
+  const visible    = showAll ? treatments : treatments.slice(0, INITIAL_SHOW);
+  const hasMore    = treatments.length > INITIAL_SHOW;
 
   return (
     <Card
@@ -39,6 +49,7 @@ export function CoverageSpotlight({ config, index }: Props) {
           </Badge>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
         {/* Benefit utilization */}
         <div>
@@ -52,11 +63,7 @@ export function CoverageSpotlight({ config, index }: Props) {
             value={usedPct}
             className="h-2"
             indicatorClassName={cn(
-              isCritical
-                ? "bg-amber-500"
-                : usedPct > 60
-                ? "bg-yellow-500"
-                : "bg-emerald-500"
+              isCritical ? "bg-amber-500" : usedPct > 60 ? "bg-yellow-500" : "bg-emerald-500"
             )}
           />
           <div className="flex justify-between mt-1">
@@ -83,21 +90,49 @@ export function CoverageSpotlight({ config, index }: Props) {
           )}
         </div>
 
-        {/* Included treatments */}
-        {b.included_treatments?.length > 0 && (
+        {/* Included treatments — interactive pills */}
+        {treatments.length > 0 && (
           <div>
             <p className="text-xs text-neutral-500 mb-2">Included treatments</p>
             <div className="flex flex-wrap gap-1.5">
-              {b.included_treatments.map((t) => (
-                <div
+              {visible.map((t) => (
+                <button
                   key={t}
-                  className="flex items-center gap-1 text-xs text-neutral-300 bg-neutral-800/80 border border-neutral-700/50 rounded-md px-2 py-0.5"
+                  onClick={() => setSelected(selectedTreatment === t ? null : t)}
+                  className={cn(
+                    "flex items-center gap-1 text-xs rounded-md px-2 py-0.5 border transition-all duration-150",
+                    selectedTreatment === t
+                      ? "dark:bg-white dark:text-black dark:border-white bg-neutral-900 text-white border-neutral-900"
+                      : "bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:border-neutral-500"
+                  )}
                 >
-                  <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className={cn("h-2.5 w-2.5 shrink-0", selectedTreatment === t ? "dark:text-black text-white" : "text-emerald-400")} />
                   {t}
-                </div>
+                </button>
               ))}
             </div>
+
+            {/* Selected treatment detail */}
+            {selectedTreatment && (
+              <div className="mt-2 animate-in fade-in duration-150 rounded-lg border border-neutral-700/50 bg-neutral-800/50 px-3 py-2 text-xs text-neutral-300">
+                <span className="font-medium dark:text-white text-neutral-900">{selectedTreatment}</span>
+                {" "}is covered under your{" "}
+                <span className="text-emerald-400">{b.cover_name}</span> benefit.
+                Your remaining allowance is{" "}
+                <span className="font-semibold text-emerald-300">{formatSAR(remaining)}</span>.
+              </div>
+            )}
+
+            {/* Show more / less */}
+            {hasMore && (
+              <button
+                onClick={() => setShowAll((v) => !v)}
+                className="mt-2 flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
+              >
+                <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", showAll && "rotate-180")} />
+                {showAll ? "Show less" : `Show ${treatments.length - INITIAL_SHOW} more`}
+              </button>
+            )}
           </div>
         )}
       </CardContent>

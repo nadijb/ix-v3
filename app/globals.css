@@ -3,7 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light theme ─────────────────────────────────────────────────────── */
   :root {
+    --background: 220 20% 96%;
+    --foreground: 222 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 20% 10%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 220 15% 90%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 0%;
+    --border: 0 0% 78%;
+    --input: 0 0% 12%;
+    --ring: 0 0% 50%;
+    --radius: 0.625rem;
+  }
+
+  /* ── Dark theme ──────────────────────────────────────────────────────── */
+  .dark {
     --background: 0 0% 4%;
     --foreground: 0 0% 92%;
     --card: 0 0% 6%;
@@ -61,10 +82,54 @@
   display: none;
 }
 
-/* Grid background */
+/* Grid background — adapts to theme */
 .ix-grid-bg {
+  background-image:
+    linear-gradient(rgba(0 0 0 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0 0 0 / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.dark .ix-grid-bg {
   background-image:
     linear-gradient(rgba(255 255 255 / 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255 255 255 / 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+
+/* ── Light-mode element overrides ─────────────────────────────────────── */
+/* Remap hardcoded dark neutrals in element components for full light-mode support */
+
+/* Text */
+html:not(.dark) .text-neutral-100 { color: rgb(17 24 39); }
+html:not(.dark) .text-neutral-200 { color: rgb(31 41 55); }
+html:not(.dark) .text-neutral-300 { color: rgb(55 65 81); }
+
+/* Backgrounds — inner section panels */
+html:not(.dark) .bg-neutral-800\/20 { background-color: rgb(249 250 251 / 0.7); }
+html:not(.dark) .bg-neutral-800\/30 { background-color: rgb(249 250 251); }
+html:not(.dark) .bg-neutral-800\/40 { background-color: rgb(243 244 246); }
+html:not(.dark) .bg-neutral-800\/50 { background-color: rgb(243 244 246); }
+html:not(.dark) .bg-neutral-800\/60 { background-color: rgb(237 238 240); }
+html:not(.dark) .bg-neutral-800\/80 { background-color: rgb(237 238 240); }
+html:not(.dark) .bg-neutral-800    { background-color: rgb(243 244 246); }
+/* bg-neutral-900 bare intentionally NOT overridden — used by ChatWidget dark elements */
+html:not(.dark) .bg-neutral-900\/60 { background-color: rgb(249 250 251); }
+html:not(.dark) .bg-neutral-900\/80 { background-color: rgb(249 250 251); }
+html:not(.dark) .bg-neutral-950\/20 { background-color: rgb(240 253 250 / 0.6); }
+html:not(.dark) .bg-white\/5  { background-color: rgb(243 244 246 / 0.6); }
+html:not(.dark) .bg-white\/8  { background-color: rgb(243 244 246); }
+html:not(.dark) .bg-white\/10 { background-color: rgb(237 238 240); }
+html:not(.dark) .bg-neutral-700\/20 { background-color: rgb(249 250 251 / 0.7); }
+
+/* Borders */
+html:not(.dark) .border-neutral-600     { border-color: rgb(212 212 212); }
+html:not(.dark) .border-neutral-700     { border-color: rgb(214 214 214); }
+html:not(.dark) .border-neutral-700\/50 { border-color: rgb(220 220 220); }
+html:not(.dark) .border-neutral-800     { border-color: rgb(229 231 235); }
+html:not(.dark) .border-white\/10       { border-color: rgb(229 231 235); }
+html:not(.dark) .border-white\/15       { border-color: rgb(212 212 212); }
+html:not(.dark) .border-white\/20       { border-color: rgb(200 200 200); }
+html:not(.dark) .border-white\/25       { border-color: rgb(190 190 195); }
+html:not(.dark) .border-white\/30        { border-color: rgb(180 180 188); }
+html:not(.dark) .border-neutral-500\/30 { border-color: rgb(212 212 212); }

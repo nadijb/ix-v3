@@ -114,6 +114,7 @@ export interface PreApprovalBinding {
   is_prefilled: boolean;
   existing_approvals_count: number;
   submit_endpoint: string;
+  pre_approval_limit: number;
 }
 
 export type AnyBinding =
@@ -190,6 +191,81 @@ export interface PreApprovalResult {
   guidance_message: string;
   submitted_at: string;
 }
+
+// ─── AI Chat types ────────────────────────────────────────────────────────────
+
+export interface CoInsuranceRule {
+  category: string;
+  type: string;
+  coinsurance_pct: number;
+  annual_cap_sar: number | null;
+  note: string;
+}
+
+export interface CoInsuranceRulesBinding {
+  title: string;
+  subtitle: string;
+  rules: CoInsuranceRule[];
+}
+
+export interface Provider {
+  name: string;
+  specialty: string;
+  city: string;
+  distance_km: number;
+  phone: string;
+  maps_url: string;
+}
+
+export interface ProviderFinderBinding {
+  title: string;
+  subtitle: string;
+  specialty: string;
+  providers: Provider[];
+  actions: string[];
+}
+
+export interface ClaimsTimelineStep {
+  step: string;
+  completed: boolean;
+  date: string | null;
+}
+
+export interface ClaimsTrackerBinding {
+  title: string;
+  batch_id: string;
+  status: string;
+  status_label: string;
+  procedure_type: string;
+  amount_claimed_sar: number;
+  amount_approved_sar: number | null;
+  submitted_at: string;
+  estimated_completion: string | null;
+  documents_required: boolean;
+  appeal_eligible: boolean;
+  timeline: ClaimsTimelineStep[];
+}
+
+export interface ChatElement {
+  element_id: string;
+  slot: SlotType;
+  priority?: number;
+  variant_id?: string;
+  data_binding:
+    | CoInsuranceRulesBinding
+    | ProviderFinderBinding
+    | ClaimsTrackerBinding
+    | Record<string, unknown>;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  element?: { element_id: string; title: string };
+}
+
+// ─── Scenario presets matching test.md ───────────────────────────────────────
 
 // Scenario presets matching test.md
 export interface ScenarioPreset {

@@ -52,12 +52,6 @@ export const SCENARIOS: ScenarioPreset[] = [
       },
     },
   },
-  // {
-  //   id: "1.6",
-  //   label: "Invalid Member",
-  //   description: "member_id 9999 — no policy found",
-  //   params: { member_id: 9999 },
-  // },
 ];
 
 interface Props {
@@ -82,8 +76,8 @@ export function ScenarioSelector({ selected, onSelect, loading }: Props) {
                 "flex-none rounded-full border px-4 py-2 text-xs font-medium transition-all whitespace-nowrap",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 isActive
-                  ? "border-white/30 bg-white/10 text-white"
-                  : "border-neutral-700 bg-neutral-900 text-neutral-400 hover:border-white/20 hover:text-neutral-200",
+                  ? "border-neutral-400 dark:border-white/30 bg-white/10 dark:text-white text-neutral-800 font-semibold"
+                  : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:text-neutral-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:border-white/20 dark:hover:text-neutral-200",
               )}
             >
               {scenario.label}
@@ -95,8 +89,8 @@ export function ScenarioSelector({ selected, onSelect, loading }: Props) {
       {/* Desktop: vertical card list */}
       <div className="hidden lg:block space-y-3">
         <div className="flex items-center gap-1.5">
-          <Beaker className="h-3.5 w-3.5 text-neutral-400" />
-          <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
+          <Beaker className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
+          <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
             Scenarios
           </span>
         </div>
@@ -111,18 +105,20 @@ export function ScenarioSelector({ selected, onSelect, loading }: Props) {
                 disabled={loading}
                 className={cn(
                   "w-full text-left rounded-xl border p-3 transition-all",
-                  "hover:border-white/20 hover:bg-white/5",
+                  "hover:border-neutral-400 dark:hover:border-white/20 hover:bg-neutral-100 dark:hover:bg-white/5",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   isActive
-                    ? "border-white/25 bg-white/5"
-                    : "border-neutral-800 bg-neutral-900/60",
+                    ? "border-neutral-800/30 bg-neutral-900/8 dark:border-white/25 dark:bg-white/5"
+                    : "border-neutral-200 bg-white/70 dark:border-neutral-800 dark:bg-neutral-900/60",
                 )}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span
                     className={cn(
                       "text-xs font-semibold",
-                      isActive ? "text-white" : "text-neutral-300",
+                      isActive
+                        ? "text-neutral-900 dark:text-white"
+                        : "text-neutral-700 dark:text-neutral-300",
                     )}
                   >
                     {scenario.label}
@@ -131,7 +127,7 @@ export function ScenarioSelector({ selected, onSelect, loading }: Props) {
                     variant="outline"
                     className={cn(
                       "text-[10px] px-1.5",
-                      isActive ? "border-white/30 text-white" : "",
+                      isActive ? "border-neutral-400 dark:border-white/30 text-neutral-700 dark:text-white" : "",
                     )}
                   >
                     {scenario.id}
